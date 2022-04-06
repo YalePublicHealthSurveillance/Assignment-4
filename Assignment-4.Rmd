@@ -1,0 +1,100 @@
+---
+title: "Assignment 4"
+author: "Dan Weinberger"
+date: "4/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)
+library(MASS)
+source('./R/its_functions.R')
+```
+
+```{r}
+# d1 <- read.csv('https://github.com/weinbergerlab/InterventionEvaluatR/raw/master/data-raw/PNAS/S1-Brazil.csv')
+# d1 <- d1[d1$age_group==1, c('date','J12_18', 'ach_noj')]
+# d1$date <- as.Date(d1$date)
+# 
+# d1 <- d1[order(d1$date),]
+# saveRDS(d1, './Data/Brazil_hosp.rds')
+```
+
+```{r}
+d1 <- readRDS('./Data/Brazil_hosp.rds')
+```
+
+Define vaccine introduction date
+
+```{r}
+vaccine_intro_date <- as.Date('2010-01-01')
+```
+
+Define when the evaluation period begins
+
+```{r}
+eval_date <- as.Date('2011-01-01')
+```
+
+Create some variables that might be helpful
+
+```{r}
+
+d1$time_index <- 1:nrow(d1)
+
+#Indicator variables (0,1) for the different post-vaccine periods
+d1$post1 <- 0
+d1$post1[d1$date>=vaccine_intro_date] <- 1
+
+d1$post2 <- 0
+d1$post2[d1$date>=eval_date] <- 1
+
+#Terms that can be used to construct a linear spline (connected line with changing slopes)
+d1$spl1 <- 1:nrow(d1) - which(d1$date==vaccine_intro_date) + 1
+d1$spl2 <- 1:nrow(d1) - which(d1$date==eval_date) + 1
+
+d1$spl1[d1$spl1<0] <- 0
+d1$spl2[d1$spl2<0] <- 0
+
+d1$log_offset <- log(d1$ach_noj)
+```
+
+Fit a series of negative binomial regressions:
+1) a trend +log(offset), 
+2) a trend + step change +log(offset)
+3) a trend + interaction between trend and step change variables +log(offset)
+4) a trend + spline variables +log(offset)
+
+```{r}
+
+```
+
+
+Now let's use a function that will allow us to get uncertainty intervals
+```{r}
+mod1 <- spline_func(time_points=d1$date,
+                    ds=d1,
+                    post_period1=c('2010-08-01', '2011-08-01'),
+                    post_period2=c('2011-08-01', '2012-12-01'),
+                    mod='negbin',
+                    other.covars=c('time_index'),
+                    denom='ach_noj',
+                    outcome_name='J12_18',
+                    vax.vars=c('post1','post2'))
+
+mod1$rr.q.post
+
+```
+
+Plot your output
+```{r, fig.width=8, fig.height=4}
+plot.step.func(mod1)
+
+```
+
+
+
+
+
+
