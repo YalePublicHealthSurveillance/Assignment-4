@@ -25,19 +25,25 @@ source('./R/its_functions.R')
 d1 <- readRDS('./Data/Brazil_hosp.rds')
 ```
 
-Define vaccine introduction date
+## Make a time series plot
+
+```{r}
+
+```
+
+## Define vaccine introduction date
 
 ```{r}
 vaccine_intro_date <- as.Date('2010-01-01')
 ```
 
-Define when the evaluation period begins
+## Define when the evaluation period begins
 
 ```{r}
 eval_date <- as.Date('2011-01-01')
 ```
 
-Create some variables that might be helpful
+## Create some variables that might be helpful
 
 ```{r}
 
@@ -62,7 +68,7 @@ d1$log_offset <- log(d1$ach_noj)
 d1$none <- 1
 ```
 
-Fit a series of negative binomial regressions:
+## Fit a series of negative binomial regressions:
 1) a trend +log(offset), 
 2) a trend + step change +log(offset)
 3) a trend + interaction between trend and step change variables +log(offset)
@@ -73,7 +79,7 @@ Fit a series of negative binomial regressions:
 ```
 
 
-Now let's use a function that will allow us to get uncertainty intervals
+## Now let's use a function that will allow us to get uncertainty intervals
 ```{r}
 mod1 <- spline_func(time_points=d1$date,
                     ds=d1,
@@ -91,14 +97,14 @@ mod1$aic1
 
 ```
 
-Plot your output
+## Plot your output
 ```{r, fig.width=8, fig.height=4}
 plot.step.func(mod1)
 
 ```
 
 
-Repeat the model, but this time do not adjust for all-cause hospitalizations
+## Repeat the model, but this time do not adjust for all-cause hospitalizations
 
 ```{r}
 mod2 <- spline_func(time_points=d1$date,
